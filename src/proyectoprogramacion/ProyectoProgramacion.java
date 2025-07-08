@@ -6,7 +6,7 @@ package proyectoprogramacion;
 
 /**
  *
- * @author sebas
+ * @author Tatiana y Sebastian
  */
 public class ProyectoProgramacion {
 
