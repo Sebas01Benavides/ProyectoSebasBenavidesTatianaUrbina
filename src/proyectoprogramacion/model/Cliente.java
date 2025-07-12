@@ -3,7 +3,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package proyectoprogramacion.model;
-
 /**
  *Esta clase representa a un cliente del banco con nombre, prioridad, tiempo y su nivel de tolerancia.
  * @author Tatiana Urbina y Sebastian Benavides
