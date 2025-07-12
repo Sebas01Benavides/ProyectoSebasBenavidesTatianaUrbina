@@ -10,7 +10,7 @@ import javax.swing.Timer;
 
 /**
  *
- * @author sebas
+ * @author Tatiana Urbina y Sebastian Benavides 
  */
 public class SplashScreen extends javax.swing.JFrame {
 

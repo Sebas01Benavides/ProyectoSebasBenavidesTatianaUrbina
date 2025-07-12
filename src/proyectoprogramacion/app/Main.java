@@ -9,7 +9,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  *
- * @author sebas
+ * @author Tatiana Urbina y Sebastian Benavides 
  */
 public class Main {
     public static void main(String args[]){

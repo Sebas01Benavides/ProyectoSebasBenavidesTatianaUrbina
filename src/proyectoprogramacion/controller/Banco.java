@@ -17,7 +17,7 @@ import proyectoprogramacion.model.Cliente;
  * Se encarga de la fila de clientes, el despacho de clientes a los cajeros,
  * la gestión del tiempo de espera y la tolerancia, y la recolección de reportes.
  *
- * @author Tatiana Urbina y Sebastian Benavides (modificado para la simulación)
+ * @author Tatiana Urbina y Sebastian Benavides 
  */
 public class Banco {
 
