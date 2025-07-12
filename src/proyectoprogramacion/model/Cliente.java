@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package proyectoprogramacion.model;
 import java.util.Random;
 /**
@@ -16,12 +12,14 @@ public class Cliente {
     private int tiempoEsperaFilaMinutos;
     private final int toleranciaMinutos;
     private final String idTicket;
+    private final int numeroTicket;
     
     //Constructor, para crear un nuevo cliente con los datos básicos necesarios para el sistema.
     //Se usa para registrar un cleinte en la simulación del banco.
     public Cliente(TipoCliente tipo) {
           this.tipo = tipo;
-          this.idTicket= generarIdTicket(tipo); 
+          this.numeroTicket= nextIdTicket;
+          this.idTicket= generarIdTicket(tipo);
           this.tiempoEsperaFilaMinutos= 0;
           this.toleranciaMinutos= generadorNumerosAleatorios.nextInt(146)+5;
           this.minutosAtencion= generadorNumerosAleatorios.nextInt(110)+10;
@@ -33,7 +31,7 @@ public class Cliente {
      * @return ID del ticket generado
      */
     private String generarIdTicket(TipoCliente tipo){
-        String id="Ticket" + "/" + nextIdTicket + "/" + tipo.getSufijoTicket();
+        String id="Ticket" + "/" + this.numeroTicket + "/" + tipo.getSufijoTicket();
         nextIdTicket++;
         return id;
     }
@@ -54,11 +52,19 @@ public class Cliente {
         return idTicket;
     }
     //
+    public int getNumeroTicket(){
+        return numeroTicket;
+    }
+    //
     public int getMinutosAtencion() {
         return minutosAtencion;
     }
     //
     public int getToleranciaMinutos() {
         return toleranciaMinutos;
+    }
+    //
+    public int getTiempoEsperaFilaMinutos(){
+        return tiempoEsperaFilaMinutos;
     }
 }
