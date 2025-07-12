@@ -1,23 +1,55 @@
 package proyectoprogramacion.view;
 
-import com.jtattoo.plaf.hifi.HiFiLookAndFeel;
+// Importa el estilo visual (LookAndFeel) HiFi del paquete externo JTattoo
+import com.jtattoo.plaf.hifi.HiFiLookAndFeel; 
+
+// Importa clases de estructura de datos para manejar listas dinámicas
+import java.util.ArrayList;
+import java.util.List;
+
+// Importa herramientas para registrar errores o eventos del sistema
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+// Importa clases para cambiar la apariencia visual (LookAndFeel) de la interfaz Swing
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
+// Importa componente para mostrar cuadros de diálogo emergentes
+import javax.swing.JOptionPane;
+// Importa el modelo por defecto para manejar los datos de la tabla visual (JTable)
+import javax.swing.table.DefaultTableModel;
+
+//Clases generadas
+import proyectoprogramacion.model.Cliente;
+import proyectoprogramacion.model.TipoCliente;
+import proyectoprogramacion.view.Tiquete;
+
+
+
 /**
- *
+ *Clase principal que representa la ventana de la simulación de fila de banco.
+ * Aquí se genera la fila, se muestra en una tabla y se inicia la simulación.
+ * 
  * @author Tatiana Urbina y Sebastian Benavides 
  */
 public class VentanaPrincipal extends javax.swing.JFrame {
+    private List<Cliente> clientes = new ArrayList<>(); // Lista para almacenar los clientes que están en la fila
+    private DefaultTableModel modeloTabla; // Modelo de tabla para manejar los datos que se muestran en jTable1
+    private int maxClientes = 25; // Cantidad máxima de clientes que se generan para la fila
+    private int indiceClienteActual = -1;  // Para controlar el cliente que se atiende
 
     /**
-     * Creates new form VentanaPrincipal
+     * Constructor de la ventana principal.
+     * Inicializa componentes y centra la ventana en pantalla.
      */
     public VentanaPrincipal() {
         initComponents();
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(null); // Centra la ventana en el medio de la pantalla
+        
+        // Obtiene el modelo de la tabla para manipular filas y columnas programáticamente
+        modeloTabla = (DefaultTableModel) jTable1.getModel();
+        modeloTabla.setRowCount(0);  // Limpia cualquier dato previo que pudiera haber en la tabla
         
     }
 
@@ -31,7 +63,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private void initComponents() {
 
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        btnIniciarSimulacion = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
@@ -42,9 +74,19 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         jButton1.setFont(new java.awt.Font("Monospaced", 1, 12)); // NOI18N
         jButton1.setText("Generar fila de clientes");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
-        jButton2.setFont(new java.awt.Font("Monospaced", 1, 12)); // NOI18N
-        jButton2.setText("Iniciar simulacion");
+        btnIniciarSimulacion.setFont(new java.awt.Font("Monospaced", 1, 12)); // NOI18N
+        btnIniciarSimulacion.setText("Iniciar simulacion");
+        btnIniciarSimulacion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnIniciarSimulacionActionPerformed(evt);
+            }
+        });
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -101,7 +143,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 .addGap(70, 70, 70)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 293, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnIniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(402, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -116,14 +158,89 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 .addGap(27, 27, 27)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnIniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(24, 24, 24))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    clientes.clear();              // limpia la lista vieja de clientes
+    modeloTabla.setRowCount(0);   // limpia la tabla visual
+    
+    Cliente.resetIdTickets();    // Reinicia el contador estático de IDs de tickets
+    
+    // Genera maxClientes clientes con tipos aleatorios
+    for (int i = 0; i < maxClientes; i++) {
+        TipoCliente tipo = TipoCliente.getRandomTipoCliente();
+        Cliente cliente = new Cliente(tipo);
+        clientes.add(cliente);
+        
+        // Agrega fila a la tabla con datos del cliente: Nombre, Prioridad, Ticket
+        modeloTabla.addRow(new Object[]{
+            "Cliente " + (i+1), // Nombre genérico
+            tipo.name(),  // Nombre del tipo de cliente
+            cliente.getIdTicket()   // Número de ticket asignado
+        });
+    }
+    
+    jLabel2.setText("Ticket actual:");  // Limpia el label de ticket para que empiece simulación limpia
+    indiceClienteActual = -1;            // Resetea índice para simulación nueva
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
+     * Método que se ejecuta al presionar el botón "Iniciar simulacion".
+     * Ordena la fila por prioridad y simula la atención cliente a cliente.
+     */
+    private void btnIniciarSimulacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarSimulacionActionPerformed
+         if (clientes.isEmpty()) {
+             // Si no hay clientes generados, muestra mensaje de error
+            JOptionPane.showMessageDialog(this, "Primero genera la fila de clientes.");
+            return;
+        }
+
+        if (indiceClienteActual == -1) {
+            // Primera vez que se inicia simulación: ordena por prioridad
+            clientes.sort((c1, c2) -> Integer.compare(c1.getTipo().getPrioridad(), c2.getTipo().getPrioridad()));
+            indiceClienteActual = 0;  // Empieza en el primer cliente
+        } else {
+             // Siguiente cliente en la fila
+            indiceClienteActual++;
+        }
+
+        if (indiceClienteActual >= clientes.size()) {
+            // Cuando se acaban los clientes
+            JOptionPane.showMessageDialog(this, "Simulación terminada. No hay más clientes.");
+            jLabel2.setText("Simulación finalizada.");
+            indiceClienteActual = -1; // Resetea para próxima simulación
+            return;
+        }
+
+        // Actualiza la tabla para mostrar la fila ordenada
+        modeloTabla.setRowCount(0);
+        int i = 1;
+        for (Cliente c : clientes) {
+            modeloTabla.addRow(new Object[]{
+                "Cliente " + i++,
+                c.getTipo().name(),
+                c.getIdTicket()
+            });
+        }
+
+         // Muestra en etiqueta el ticket actual que se está atendiendo
+        Cliente clienteActual = clientes.get(indiceClienteActual);
+        jLabel2.setText("Ticket actual: " + clienteActual.getIdTicket() + " - Prioridad: " + clienteActual.getTipo().name());
+
+       // Muestra ventana modal con el ticket del cliente actual
+        Tiquete tiqueteDialog = new Tiquete(this,
+                String.valueOf(clienteActual.getIdTicket()),
+                clienteActual.getTipo().name());
+        tiqueteDialog.setVisible(true);
+    }//GEN-LAST:event_btnIniciarSimulacionActionPerformed
+
+    /**
+     *  Método main para lanzar la aplicación.
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -165,8 +282,8 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnIniciarSimulacion;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
