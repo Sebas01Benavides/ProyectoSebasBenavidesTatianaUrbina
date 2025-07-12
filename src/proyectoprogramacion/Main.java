@@ -1,11 +1,12 @@
-package proyectoprogramacion.app;
-import proyectoprogramacion.view.SplashScreen;
+package proyectoprogramacion;
+
 import com.jtattoo.plaf.hifi.HiFiLookAndFeel;
-import java.awt.EventQueue;
+import proyectoprogramacion.view.VentanaPrincipal;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import proyectoprogramacion.view.SplashScreen;
 
 /**
  *
@@ -13,16 +14,29 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public class Main {
     public static void main(String args[]){
-        try {
+          try {
             UIManager.setLookAndFeel(new HiFiLookAndFeel());
-        } catch (UnsupportedLookAndFeelException ex) {
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
         }
-        
-        EventQueue.invokeLater(new Runnable(){
-            public void run(){
-                new SplashScreen().setVisible(true);
-            }
+
+        // Crear y mostrar splash screen
+        SplashScreen splash = new SplashScreen();
+        splash.setVisible(true);
+
+        // Esperar 2 segundos para que se vea el splash
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Cerrar splash
+        splash.dispose();
+
+        // Mostrar ventana principal
+        java.awt.EventQueue.invokeLater(() -> {
+            new VentanaPrincipal().setVisible(true);
         });
     }
 }
