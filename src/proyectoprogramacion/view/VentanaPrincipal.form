@@ -33,10 +33,10 @@
               </Group>
               <EmptySpace min="-2" pref="70" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel2" min="-2" pref="293" max="-2" attributes="0"/>
                   <Component id="btnIniciarSimulacion" min="-2" pref="198" max="-2" attributes="0"/>
+                  <Component id="jLabel2" min="-2" pref="395" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="402" max="32767" attributes="0"/>
+              <EmptySpace pref="300" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
