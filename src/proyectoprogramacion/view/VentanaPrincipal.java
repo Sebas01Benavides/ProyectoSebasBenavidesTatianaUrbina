@@ -23,7 +23,7 @@ import javax.swing.table.DefaultTableModel;
 //Clases generadas
 import proyectoprogramacion.model.Cliente;
 import proyectoprogramacion.model.TipoCliente;
-import proyectoprogramacion.view.Tiquete;
+//import proyectoprogramacion.view.Tiquete;
 
 
 
@@ -276,7 +276,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 } catch (UnsupportedLookAndFeelException ex) {
                     Logger.getLogger(VentanaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                new VentanaPrincipal().setVisible(true);
+
             }
         });
     }

@@ -17,26 +17,10 @@ public class Main {
           try {
             UIManager.setLookAndFeel(new HiFiLookAndFeel());
         } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
         }
 
         // Crear y mostrar splash screen
         SplashScreen splash = new SplashScreen();
         splash.setVisible(true);
-
-        // Esperar 2 segundos para que se vea el splash
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Cerrar splash
-        splash.dispose();
-
-        // Mostrar ventana principal
-        java.awt.EventQueue.invokeLater(() -> {
-            new VentanaPrincipal().setVisible(true);
-        });
     }
 }

@@ -1,7 +1,5 @@
 package proyectoprogramacion.controller;
-import java.util.PriorityQueue;
 import proyectoprogramacion.model.Cliente;
-import proyectoprogramacion.model.TipoCliente;
 import proyectoprogramacion.model.ReporteCliente;
 import java.util.Comparator; 
 import java.util.List;       
