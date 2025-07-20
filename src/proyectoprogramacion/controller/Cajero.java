@@ -13,6 +13,10 @@ public class Cajero implements Runnable {
     private volatile boolean cajeroActivo = false;
     private Cliente clienteActual;
     private int tiempoRestanteTramite;
+    //Estadisticas necesarias 
+    private int totalClientesAtendidos = 0;
+    private long tiempoTotalAtencion = 0;
+    private long tiempoInicioAtencion = 0; // Para llevar tiempo por cliente
 
     public interface EstadoCajeroListener {
         void onStatusChange(String nombreCajero, String estado, Cliente cliente);
@@ -45,6 +49,7 @@ public class Cajero implements Runnable {
                 clienteActual = banco.getNextCliente();
                 if (clienteActual != null) {
                     tiempoRestanteTramite = clienteActual.getMinutosAtencion();
+                    tiempoInicioAtencion = System.currentTimeMillis(); // Obtiene el tiempo de inicio en que se atiende un cliente
                     notifyStatusChange("Atendiendo a " + clienteActual.getIdTicket() + " (" + clienteActual.getTipo().name() + ")", clienteActual);
                 } else {
                     notifyStatusChange("Esperando cliente...", null);
@@ -52,7 +57,6 @@ public class Cajero implements Runnable {
                         Thread.sleep(500); //  pausa para evitar consumo de CPU
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        System.err.println(nombre + " fue interrumpido mientras esperaba.");
                         cajeroActivo = false;
                     }
                 }
@@ -61,12 +65,10 @@ public class Cajero implements Runnable {
                     Thread.sleep(100); // pausa para simular tiempo real
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    System.err.println(nombre + " fue interrumpido durante el trámite.");
                     cajeroActivo = false;
                 }
             }
         }
-        System.out.println(nombre + " ha terminado su turno.");
     }
     
     public synchronized void avanzarMinutoSimulacion(int minutosSimulados) {
@@ -75,6 +77,11 @@ public class Cajero implements Runnable {
         if (clienteActual != null) {
             tiempoRestanteTramite -= minutosSimulados;
             if (tiempoRestanteTramite <= 0) {
+                tiempoTotalAtencion += clienteActual.getMinutosAtencion() * 1000L;
+                totalClientesAtendidos++;
+                long duracion = System.currentTimeMillis() - tiempoInicioAtencion; // duracion de la sesion con el cliente
+                tiempoTotalAtencion += duracion; // Guarda el tiempo total de atencion
+                totalClientesAtendidos++;//obtiene el total de clientes atendidos del cajero 
                 banco.addClienteAtendido(clienteActual);
                 notifyStatusChange("Cliente " + clienteActual.getIdTicket() + " atendido.", clienteActual);
                 clienteActual = null;
@@ -86,7 +93,6 @@ public class Cajero implements Runnable {
             }
         }
     }
-
     // 
     private void notifyStatusChange(String estado, Cliente cliente) {
         if (listener != null) {
@@ -105,4 +111,17 @@ public class Cajero implements Runnable {
     public boolean isCajeroActivo() {
         return cajeroActivo;
     }
+    // Getters para estadísticas
+    public int getTotalClientesAtendidos() {
+        return totalClientesAtendidos;
+    }
+
+    public long getTiempoTotalAtencion() {
+        return tiempoTotalAtencion;
+    }
+
+    public double getPromedioAtencionSegundos() {
+        return totalClientesAtendidos == 0 ? 0 : (tiempoTotalAtencion / 1000.0) / totalClientesAtendidos;
+    }
 }
+

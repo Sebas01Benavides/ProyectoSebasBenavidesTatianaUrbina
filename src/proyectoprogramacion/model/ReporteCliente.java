@@ -2,7 +2,7 @@ package proyectoprogramacion.model;
 
 /**
  *
- * @author sebas
+ * @author Tatiana Urbina y Sebastian Benavides 
  */
 public class ReporteCliente {
     private final String idTicket;
@@ -42,8 +42,10 @@ public class ReporteCliente {
     }
     @Override
     public String toString() {
-        return "Ticket: " + idTicket + ", Tipo: " + tipoCliente +
-               ", Esperó: " + minutosEsperaAlRetirarse + "minutos de Tolerancia: " + toleranciaMinutos + "min)";
+        return "Ticket: " + idTicket +
+               ", Tipo: " + tipoCliente +
+               ", Esperó: " + minutosEsperaAlRetirarse + " min" +
+               ", Tolerancia: " + toleranciaMinutos + " min";
     }
 }
     

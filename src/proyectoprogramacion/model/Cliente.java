@@ -12,7 +12,7 @@ public class Cliente {
     private int tiempoEsperaFilaMinutos;
     private final int toleranciaMinutos;
     private final String idTicket;
-    private final int numeroTicket;
+    private  int numeroTicket;
     
     //Constructor, para crear un nuevo cliente con los datos básicos necesarios para el sistema.
     //Se usa para registrar un cleinte en la simulación del banco.
@@ -66,5 +66,8 @@ public class Cliente {
     //
     public int getTiempoEsperaFilaMinutos(){
         return tiempoEsperaFilaMinutos;
+    }
+    public void setNumeroTicket(int numeroTicket) {
+    this.numeroTicket = numeroTicket;
     }
 }

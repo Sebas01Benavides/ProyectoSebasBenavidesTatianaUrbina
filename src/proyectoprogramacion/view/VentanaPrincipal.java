@@ -18,8 +18,6 @@ import java.util.Random;
 import javax.swing.Timer;
 import proyectoprogramacion.model.ReporteCliente;
 
-
-
 /**
  *Clase principal que representa la ventana de la simulación de fila de banco.
  * Aquí se genera la fila, se muestra en una tabla y se inicia la simulación.
@@ -105,8 +103,8 @@ public VentanaPrincipal() {
     public void cargarClientesDesdeJSON(String rutaArchivo) {
         try (FileReader reader = new FileReader(rutaArchivo)) {
             banco.reset();
-            List<Cliente> clientesArray = banco.getClientesEnFila();
-            for (Cliente c : clientesArray) {
+            List<Cliente> clientesDesdeJson = JsonHandler.convertirJsonAClientes(reader);
+            for (Cliente c : clientesDesdeJson) {
                 banco.addCliente(c);
             }
             actualizarTablaClientes();
@@ -144,7 +142,6 @@ public VentanaPrincipal() {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Simulacion fila de banco");
 
-        jButton1.setFont(new java.awt.Font("Monospaced", 1, 12)); // NOI18N
         jButton1.setText("Generar fila de clientes");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -152,7 +149,6 @@ public VentanaPrincipal() {
             }
         });
 
-        btnIniciarSimulacion.setFont(new java.awt.Font("Monospaced", 1, 12)); // NOI18N
         btnIniciarSimulacion.setText("Iniciar simulacion");
         btnIniciarSimulacion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -271,30 +267,30 @@ public VentanaPrincipal() {
                         .addComponent(btnIniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnReiniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(15, 15, 15)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnMostrarReportes, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnGuardarJson, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnCargarlistaJson, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addComponent(txtCajero5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(txtCajero1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(txtCajero2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(txtCajero3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtCajero4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(txtCajero4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtCajero5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(187, Short.MAX_VALUE))
+                .addContainerGap(208, Short.MAX_VALUE))
         );
 
         pack();
@@ -367,10 +363,18 @@ public VentanaPrincipal() {
     }//GEN-LAST:event_btnReiniciarSimulacionActionPerformed
 
     private void btnMostrarReportesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMostrarReportesActionPerformed
-        StringBuilder reporte = new StringBuilder();
-        reporte.append("Clientes atendidos: ").append(banco.getClientesAtendidos().size()).append("\n");
-        reporte.append("Clientes no atendidos: ").append(banco.getClientesNoAtendidos().size()).append("\n");
-        JOptionPane.showMessageDialog(this, reporte.toString(), "Reporte", JOptionPane.INFORMATION_MESSAGE);
+        // Resumen general
+    StringBuilder reporte = new StringBuilder();
+    reporte.append("Clientes atendidos: ").append(banco.getClientesAtendidos().size()).append("\n");
+    reporte.append("Clientes no atendidos: ").append(banco.getClientesNoAtendidos().size()).append("\n");
+    
+    // Mostrar resumen en JOptionPane
+    JOptionPane.showMessageDialog(this, reporte.toString(), "Reporte General", JOptionPane.INFORMATION_MESSAGE);
+    
+    // Mostrar detalles de cada cajero
+    java.util.List<Cajero> cajeros = banco.getCajeros(); // <-- Asegúrate de tener este método
+    ReporteCajeros dialogo = new ReporteCajeros(this, cajeros);
+    dialogo.setVisible(true);
     }//GEN-LAST:event_btnMostrarReportesActionPerformed
 
     private void btnGuardarJsonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarJsonActionPerformed

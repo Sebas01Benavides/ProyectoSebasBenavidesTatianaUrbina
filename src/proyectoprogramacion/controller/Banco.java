@@ -13,11 +13,11 @@ import proyectoprogramacion.model.TipoCliente;
  *
  * @author Tatiana Urbina y Sebastian Benavides 
  */
-public class Banco{
+public class Banco{//Representamos el banco con una fila de clientes y con cajeros
     public static final int MAX_FILA=25;
-    private final PriorityQueue<Cliente> filaClientes;
-    //En las siguientes listas se asignam los clientres que fueron atendidos o se fueron del banco
-    private final List<Cliente> clientesAtendidos;
+    private final PriorityQueue<Cliente> filaClientes;//Cola de prioridad que ordena a los clientes
+    private final List<Cliente> clientesAtendidos;//En las siguientes listas se asignam los clientres que fueron atendidos o se fueron del banco
+     private List<Cajero> listaCajeros = new ArrayList<>();
     private final List<ReporteCliente> clientesRetirados;
     //Este siguiente atributo lleva el control del ultimo ticket que se esta atendiendo en el sistema
     private int ticketActual=0;
@@ -25,7 +25,7 @@ public class Banco{
      * Metodo constructor del banco que prepara las filas y listas
      */
     public Banco (){
-        this.filaClientes= new PriorityQueue<>(new Comparator<Cliente>() {
+        this.filaClientes= new PriorityQueue<>(new Comparator<Cliente>() { //Crea la cola con prioridad
             @Override
             public int compare(Cliente c1, Cliente c2) {
                 //Compara la prioridad segun el numero
@@ -41,6 +41,7 @@ public class Banco{
         this.clientesAtendidos=new LinkedList<>();
         this.clientesRetirados=new LinkedList<>();
     }
+    //Inicializa la lista de cajeros (del 1 al 5)
     public void inicializarCajeros() {
         listaCajeros.clear();
         for (int i = 1; i <= 5; i++) {
@@ -48,7 +49,7 @@ public class Banco{
             listaCajeros.add(cajero);
         }
     }
-
+    //Agrega un cliente a la fila si no está llena
     public boolean addCliente(Cliente nuevoCliente){
         if (filaClientes.size()>=MAX_FILA){
             return false; //Indica que la fila esta llena
@@ -57,7 +58,7 @@ public class Banco{
         return true;//CLiente agregado
     }
     /**
-     * Este metodo lo debe llamar un cajero para obtener el siguiente cliente por atender
+     * Obtiene y remueve al siguiente cliente de la fila para que sea atendido
      * @return 
      */
     public synchronized Cliente getNextCliente(){
@@ -89,6 +90,7 @@ public class Banco{
         
         for (Cliente cliente : clientesARevisar){
             cliente.incrementarTiempoEspera(minutos); //el cliente espera mas tiempo
+            // Si supera tolerancia, se retira y se crea reporte
             if (cliente.getTiempoEsperaFilaMinutos()>cliente.getToleranciaMinutos()){
                 ReporteCliente reporte=new ReporteCliente(
                         cliente.getIdTicket(),
@@ -114,27 +116,24 @@ public class Banco{
         ticketActual=0;
                 
     }
-    //Metodos para obtener reportes
-    private List<Cajero> listaCajeros = new ArrayList<>();
+    //Metodos para obtener reportes y cajeros
 
     public List<Cajero> getListaCajeros() {
         return listaCajeros;
     }
-
-    public void agregarCajero(Cajero cajero) {
-        listaCajeros.add(cajero);
-    }
-
-    public List<ReporteCliente> getClientesNoAtendidos(){//clientes que se fueron sin ser atendidos
+    // devuelve listaclientes que se fueron sin ser atendidos
+    public List<ReporteCliente> getClientesNoAtendidos(){
         return clientesRetirados;
     }
+    //devuelve lista de clientes que si fueron atendidos
     public List<Cliente> getClientesAtendidos(){
-        return clientesAtendidos;//lista de clientes que si fueron atendidos
+        return clientesAtendidos;
     }
+    // devuelve lista actual de la fila
     public List<Cliente> getClientesEnFila() {
      return new ArrayList<>(filaClientes);
     }
-    
+    //Inicia la fila con clientes aleatorios hasta llenar toda la fila
    public void inicializarClientes() {
     for (int i = 0; i < MAX_FILA; i++) {
         TipoCliente tipoAleatorio = TipoCliente.getRandomTipoCliente();
@@ -142,5 +141,7 @@ public class Banco{
         addCliente(cliente);
         }
     }
-     
+   public List<Cajero> getCajeros() {
+    return listaCajeros;
+    }
 }

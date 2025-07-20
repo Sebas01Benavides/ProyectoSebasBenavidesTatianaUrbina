@@ -9,7 +9,6 @@ import javax.swing.Timer;
  * @author Tatiana Urbina y Sebastian Benavides 
  */
 public class SplashScreen extends javax.swing.JFrame {
-
     /**
      * Creates new form SplashScreen
      */
@@ -18,9 +17,7 @@ public class SplashScreen extends javax.swing.JFrame {
         initComponents();
         simulacionCarga();
     }
-    
     private Timer timer;
-
     private void simulacionCarga(){
         timer = new Timer(3000, new ActionListener() {
             @Override
@@ -35,8 +32,6 @@ public class SplashScreen extends javax.swing.JFrame {
         timer.setRepeats(false);
         timer.start();
     }
-   
-  
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

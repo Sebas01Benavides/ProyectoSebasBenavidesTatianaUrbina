@@ -1,32 +1,56 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package proyectoprogramacion.util;
 
 import java.io.*;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import proyectoprogramacion.model.Cliente;
+import proyectoprogramacion.model.TipoCliente;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 /**
  *
- * @author tatia
+ * @author Tatiana Urbina y Sebastian Benavides 
  */
-// Clase auxiliar para manejo de JSON
+
 public class JsonHandler {
 
+    private static final Gson gson = new Gson();
+
+    // Convierte JSON a lista de Clientes
+    public static List<Cliente> convertirJsonAClientes(Reader reader) {
+        //Lee la lista de objetos ClienteJson 
+        List<ClienteJson> clientesJson = gson.fromJson(reader, new TypeToken<List<ClienteJson>>(){}.getType());
+
+        // Convertimos ClienteJson a Cliente
+        return clientesJson.stream().map(cj -> {
+            TipoCliente tipo = TipoCliente.valueOf(cj.tipoCliente);
+            Cliente cliente = new Cliente(tipo);
+            cliente.setNumeroTicket(cj.numeroTicket);  
+            return cliente;
+        }).collect(Collectors.toList());
+    }
+
+    // Convierte lista de Clientes a JSON
     public static String convertirClientesAJson(List<Cliente> clientes) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        for (int i = 0; i < clientes.size(); i++) {
-            Cliente c = clientes.get(i);
-            sb.append("{")
-              .append("\"numeroTicket\":").append(c.getNumeroTicket()).append(",")
-              .append("\"tipoCliente\":\"").append(c.getTipo().toString()).append("\"")
-              .append("}");
-            if (i < clientes.size() - 1) sb.append(",");
+        //Convierte la lista de Cliente a lista de ClienteJson para solo incluir los campos necesarios
+        List<ClienteJson> clientesJson = clientes.stream()
+            .map(c -> new ClienteJson(c.getNumeroTicket(), c.getTipo().toString()))
+            .collect(Collectors.toList());
+
+        // Gson convierte la lista a JSON
+        return gson.toJson(clientesJson);
+    }
+
+    // Clase auxiliar para JSON 
+    private static class ClienteJson {
+        int numeroTicket;
+        String tipoCliente;
+
+        ClienteJson(int numeroTicket, String tipoCliente) {
+            this.numeroTicket = numeroTicket;
+            this.tipoCliente = tipoCliente;
         }
-        sb.append("]");
-        return sb.toString();
     }
 }
-
