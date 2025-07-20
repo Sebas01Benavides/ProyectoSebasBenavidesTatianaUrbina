@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.ArrayList;  
 import java.util.PriorityQueue; 
 import java.util.LinkedList;
+import proyectoprogramacion.model.TipoCliente;
+
 
 /**
  *
@@ -39,6 +41,14 @@ public class Banco{
         this.clientesAtendidos=new LinkedList<>();
         this.clientesRetirados=new LinkedList<>();
     }
+    public void inicializarCajeros() {
+        listaCajeros.clear();
+        for (int i = 1; i <= 5; i++) {
+            Cajero cajero = new Cajero("Cajero" + i, this);
+            listaCajeros.add(cajero);
+        }
+    }
+
     public boolean addCliente(Cliente nuevoCliente){
         if (filaClientes.size()>=MAX_FILA){
             return false; //Indica que la fila esta llena
@@ -60,7 +70,7 @@ public class Banco{
         return next; //devuelve el cliente o un null en caso de no haber
     }
     // este metodo retorna la cantidad de clientes actuales en la fila
-    public int getClienteEnFila(){
+    public int getCantidadClientesEnFila(){
         return filaClientes.size();
     }
     //este metodo retorna el ult8imo ticket atendido
@@ -71,6 +81,7 @@ public class Banco{
     public void addClienteAtendido(Cliente cliente){
         clientesAtendidos.add(cliente);
     }
+    
     //
     public List<ReporteCliente> actualizarTiemposEsperaYTolerancia(int minutos){
         List<Cliente> clientesARevisar= new ArrayList<>(filaClientes);
@@ -88,6 +99,7 @@ public class Banco{
                 );
                 clientesRetirados.add(reporte);
                 clientesQueSeFueron.add(reporte);
+                filaClientes.remove(cliente);
                        
             }
         }
@@ -103,33 +115,32 @@ public class Banco{
                 
     }
     //Metodos para obtener reportes
-    
+    private List<Cajero> listaCajeros = new ArrayList<>();
+
+    public List<Cajero> getListaCajeros() {
+        return listaCajeros;
+    }
+
+    public void agregarCajero(Cajero cajero) {
+        listaCajeros.add(cajero);
+    }
+
     public List<ReporteCliente> getClientesNoAtendidos(){//clientes que se fueron sin ser atendidos
         return clientesRetirados;
     }
     public List<Cliente> getClientesAtendidos(){
         return clientesAtendidos;//lista de clientes que si fueron atendidos
     }
-    public List<Cliente> getFilaClientesActual(){
-        return new ArrayList<>(filaClientes); //inncesesario
+    public List<Cliente> getClientesEnFila() {
+     return new ArrayList<>(filaClientes);
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+   public void inicializarClientes() {
+    for (int i = 0; i < MAX_FILA; i++) {
+        TipoCliente tipoAleatorio = TipoCliente.getRandomTipoCliente();
+        Cliente cliente = new Cliente(tipoAleatorio);
+        addCliente(cliente);
+        }
+    }
+     
 }

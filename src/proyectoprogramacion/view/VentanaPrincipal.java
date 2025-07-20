@@ -4,6 +4,7 @@ import proyectoprogramacion.controller.Banco;
 import proyectoprogramacion.controller.Cajero;
 import proyectoprogramacion.model.Cliente;
 import proyectoprogramacion.model.TipoCliente;
+import proyectoprogramacion.util.JsonHandler;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -14,6 +15,10 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.Random;
+import javax.swing.Timer;
+import proyectoprogramacion.model.ReporteCliente;
+
+
 
 /**
  *Clase principal que representa la ventana de la simulación de fila de banco.
@@ -22,14 +27,13 @@ import java.util.Random;
  * @author Tatiana Urbina y Sebastian Benavides 
  */
 public class VentanaPrincipal extends javax.swing.JFrame {
-        // Referencia al controlador Banco, que gestiona la lógica principal
+    // Referencia al controlador Banco, que gestiona la lógica principal
     private Banco banco;
+    
+    private JTextField[] txtCajeros;
 
     // Modelo para manipular la tabla visual de clientes
     private DefaultTableModel modeloTabla;
-
-    // Label que muestra el ticket actual que se está atendiendo
-    private JLabel lblTicketActual;
 
     // Tabla para mostrar clientes
     private JTable tablaClientes;
@@ -37,20 +41,35 @@ public class VentanaPrincipal extends javax.swing.JFrame {
      // Para generar números aleatorios para clientes (id, tipo, etc.)
     private Random random;
     
+    private Timer timerSimulacion;
+
      
 public VentanaPrincipal() {
     initComponents();
      // Inicializar la lógica
       banco = new Banco();
       random = new Random();
-
+      txtCajeros = new JTextField[] {
+            txtCajero1, txtCajero2, txtCajero3,
+            txtCajero4, txtCajero5
+        };
       // Aquí se asigna el modelo manualmente, que después conectaremos con la tabla visual
        modeloTabla = new DefaultTableModel(new String[]{"Nombre", "Prioridad", "# Ticket"}, 0);
        txtFila.setModel(modeloTabla);
 
         setLocationRelativeTo(null);
     }  
-
+    private void generarClientesIniciales(int cantidad) {
+        banco.reset();
+        Cliente.resetIdTickets();
+        for (int i = 0; i < cantidad; i++) {
+            TipoCliente tipo = TipoCliente.getRandomTipoCliente();
+            Cliente clienteNuevo = new Cliente(tipo);
+            banco.addCliente(clienteNuevo);
+        }
+        actualizarTablaClientes();
+    }
+    
     public void actualizarTablaClientes() {
           modeloTabla.setRowCount(0); // Limpia la tabla antes de agregar filas
 
@@ -63,23 +82,6 @@ public VentanaPrincipal() {
     }
 }
 
-    
-    /**
-     * Método para mostrar el ticket del cliente que está siendo atendido.
-     * Actualiza el label lblTicketActual con info del ticket.
-     */
-    public void mostrarTicketCliente(Cliente cliente) {
-        if (cliente != null) {
-            String textoTicket = String.format("Cliente en atención: Ticket %s - Tipo %s (Prioridad %d)",
-                    cliente.getIdTicket(),
-                    cliente.getTipo().name(),
-                    cliente.getTipo().getPrioridad());
-            lblTicketActual.setText(textoTicket);
-        } else {
-            lblTicketActual.setText("No hay cliente en atención.");
-        }
-    }
-
     /**
      * Guarda la lista actual de clientes en un archivo JSON.
      * @param rutaArchivo ruta donde se guardará el archivo JSON.
@@ -88,6 +90,7 @@ public VentanaPrincipal() {
         List<Cliente> clientes = banco.getClientesEnFila();
 
         try (FileWriter writer = new FileWriter(rutaArchivo)) {
+            String json = JsonHandler.convertirClientesAJson(banco.getClientesEnFila());
             writer.write(json);
             JOptionPane.showMessageDialog(this, "Clientes guardados correctamente en JSON.");
         } catch (IOException e) {
@@ -102,6 +105,7 @@ public VentanaPrincipal() {
     public void cargarClientesDesdeJSON(String rutaArchivo) {
         try (FileReader reader = new FileReader(rutaArchivo)) {
             banco.reset();
+            List<Cliente> clientesArray = banco.getClientesEnFila();
             for (Cliente c : clientesArray) {
                 banco.addCliente(c);
             }
@@ -111,14 +115,6 @@ public VentanaPrincipal() {
             JOptionPane.showMessageDialog(this, "Error al cargar JSON: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    /**
-     * Método que genera un ID único para un nuevo cliente.
-     * Aquí puedes usar el contador del banco o Random.
-     */
-    private int generarIdCliente() {
-    return banco.getClientesEnFila().size() + 1; // Devuelve entero
-}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -136,12 +132,14 @@ public VentanaPrincipal() {
         jLabel1 = new javax.swing.JLabel();
         btnReiniciarSimulacion = new javax.swing.JButton();
         btnMostrarReportes = new javax.swing.JButton();
-        lblMensajeAtencion = new javax.swing.JLabel();
         btnGuardarJson = new javax.swing.JButton();
         btnCargarlistaJson = new javax.swing.JButton();
+        txtCajero1 = new javax.swing.JTextField();
+        txtCajero2 = new javax.swing.JTextField();
+        txtCajero3 = new javax.swing.JTextField();
+        txtCajero4 = new javax.swing.JTextField();
+        txtCajero5 = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        txtareaTicketCliente = new javax.swing.JTextArea();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Simulacion fila de banco");
@@ -215,8 +213,6 @@ public VentanaPrincipal() {
             }
         });
 
-        lblMensajeAtencion.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
         btnGuardarJson.setText("Guardar lista JSON");
         btnGuardarJson.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -231,79 +227,74 @@ public VentanaPrincipal() {
             }
         });
 
-        jLabel2.setText("Titulo del ticket:");
-
-        txtareaTicketCliente.setEditable(false);
-        txtareaTicketCliente.setColumns(20);
-        txtareaTicketCliente.setRows(5);
-        jScrollPane2.setViewportView(txtareaTicketCliente);
+        jLabel2.setBackground(new java.awt.Color(51, 51, 51));
+        jLabel2.setText("Cajeros");
+        jLabel2.setToolTipText("");
+        jLabel2.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 249, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(44, 44, 44)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 336, Short.MAX_VALUE))
-                                .addGap(123, 123, 123))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addGap(16, 16, 16)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnIniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnReiniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(btnMostrarReportes, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnGuardarJson, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(btnCargarlistaJson, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(146, 146, 146)
-                                        .addComponent(lblMensajeAtencion, javax.swing.GroupLayout.PREFERRED_SIZE, 241, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(293, 293, 293)
-                                .addComponent(jScrollPane2)))))
-                .addGap(205, 234, Short.MAX_VALUE))
+                .addGap(24, 24, 24)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(69, 69, 69)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 336, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(txtCajero1, javax.swing.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
+                        .addComponent(txtCajero2)
+                        .addComponent(txtCajero3)
+                        .addComponent(txtCajero4)
+                        .addComponent(txtCajero5)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 348, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE)
+                    .addComponent(btnIniciarSimulacion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnReiniciarSimulacion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnMostrarReportes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnGuardarJson, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnCargarlistaJson, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(28, 28, 28))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(67, 67, 67)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(129, Short.MAX_VALUE)
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnIniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(27, 27, 27))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(36, 36, 36)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnReiniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(15, 15, 15)
+                        .addComponent(btnMostrarReportes, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane2)
+                        .addComponent(btnGuardarJson, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(lblMensajeAtencion, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(249, 249, 249)))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnIniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnReiniciarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnGuardarJson, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnMostrarReportes, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnCargarlistaJson, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(23, 23, 23))
+                        .addComponent(btnCargarlistaJson, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(txtCajero5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtCajero1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtCajero2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtCajero3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtCajero4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 400, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(187, Short.MAX_VALUE))
         );
 
         pack();
@@ -311,35 +302,68 @@ public VentanaPrincipal() {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
       // Genera cliente aleatorio y lo agrega a la fila
-        TipoCliente tipo = TipoCliente.getRandomTipoCliente();
-        Cliente clienteNuevo = new Cliente(generarIdCliente(), tipo);
-        banco.addCliente(clienteNuevo);
-        actualizarTablaClientes();
+        generarClientesIniciales(25);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void btnIniciarSimulacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarSimulacionActionPerformed
-        // Inicia la simulación de atención con cada cajero en hilo separado para no bloquear GUI
-        for (Cajero cajero : banco.getListaCajeros()) {
-            Thread hilo = new Thread(() -> {
-                // El cajero atiende clientes, actualiza label y tabla en SwingUtilities.invokeLater
-                cajero.iniciarAtencion(cliente -> {
-                    SwingUtilities.invokeLater(() -> {
-                        mostrarTicketCliente(cliente);
-                        actualizarTablaClientes();
-                        JOptionPane.showMessageDialog(this, "Cliente " + cliente.getNumeroTicket() + " está siendo atendido en cajero " + cajero.getId());
-                    });
-                });
+     if (timerSimulacion != null && timerSimulacion.isRunning()) {
+        JOptionPane.showMessageDialog(this, "La simulación ya está corriendo.");
+        return;
+    }
+
+    // Generar 25 clientes al iniciar la simulación
+    generarClientesIniciales(25);
+
+    banco.inicializarCajeros(); // crea 5 cajeros
+    List<Cajero> cajeros = banco.getListaCajeros();
+
+    for (int i = 0; i < cajeros.size(); i++) {
+        Cajero cajero = cajeros.get(i);
+        final int index = i; // para usar dentro del listener
+        cajero.setEstadoCajeroListener((nombreCajero, estado, cliente) -> {
+            SwingUtilities.invokeLater(() -> {
+                String texto;
+                if (cliente != null) {
+                    texto = nombreCajero + ": Atendiendo cliente " + cliente.getIdTicket();
+                } else {
+                    texto = nombreCajero + ": " + estado;
+                }
+                txtCajeros[index].setText(texto);
+
+                actualizarTablaClientes();
             });
-            hilo.start();
+        });
+        cajero.startCajero();
+    }
+
+    timerSimulacion = new Timer(1000, e -> {
+        for (Cajero cajero : cajeros) {
+            cajero.avanzarMinutoSimulacion(1);
         }
+        // Actualizar tiempos y remover clientes intolerantes
+        List<ReporteCliente> clientesQueSeFueron = banco.actualizarTiemposEsperaYTolerancia(1);
+        
+        // Actualizar tabla en el hilo de Swing
+        SwingUtilities.invokeLater(() -> {
+            actualizarTablaClientes();
+        });
+    });
+    timerSimulacion.start();
     }//GEN-LAST:event_btnIniciarSimulacionActionPerformed
 
     private void btnReiniciarSimulacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReiniciarSimulacionActionPerformed
+        if (timerSimulacion != null && timerSimulacion.isRunning()) {
+        timerSimulacion.stop();  // Detener timer si está corriendo
+        }
         banco.reset();
         Cliente.resetIdTickets(); // Reinicia contador de tickets global
-        modeloTabla.setRowCount(0);
-        lblTicketActual.setText("Ticket actual: Ninguno");
-        JOptionPane.showMessageDialog(this, "Simulación reiniciada");
+        // Limpiar textos de cajeros
+        for (JTextField txt : txtCajeros) {
+            txt.setText("");
+        }
+    
+    modeloTabla.setRowCount(0);
+    JOptionPane.showMessageDialog(this, "Simulación reiniciada");
     }//GEN-LAST:event_btnReiniciarSimulacionActionPerformed
 
     private void btnMostrarReportesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMostrarReportesActionPerformed
@@ -429,9 +453,11 @@ public VentanaPrincipal() {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JLabel lblMensajeAtencion;
+    private javax.swing.JTextField txtCajero1;
+    private javax.swing.JTextField txtCajero2;
+    private javax.swing.JTextField txtCajero3;
+    private javax.swing.JTextField txtCajero4;
+    private javax.swing.JTextField txtCajero5;
     private javax.swing.JTable txtFila;
-    private javax.swing.JTextArea txtareaTicketCliente;
     // End of variables declaration//GEN-END:variables
 }
