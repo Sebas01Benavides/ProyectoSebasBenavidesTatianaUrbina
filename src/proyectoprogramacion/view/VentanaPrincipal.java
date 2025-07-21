@@ -69,16 +69,17 @@ public VentanaPrincipal() {
     }
     
     public void actualizarTablaClientes() {
-          modeloTabla.setRowCount(0); // Limpia la tabla antes de agregar filas
-
+          modeloTabla.setRowCount(0); // Limpia la tabla
+        int contador = 1; // Contador para nombres "Cliente 1", "Cliente 2", 
         for (Cliente cliente : banco.getClientesEnFila()) {
-        modeloTabla.addRow(new Object[]{
-            cliente.getIdTicket(),
-            cliente.getTipo().toString(),
-            cliente.getIdTicket()
-        });
+            modeloTabla.addRow(new Object[]{
+                "Cliente " + contador,             // Columna 1 Nombre 
+                cliente.getTipo().toString(),      // Columna 2 Prioridad
+                cliente.getIdTicket()              // Columna 3 id Ticket
+            });
+            contador++;
+        }
     }
-}
 
     /**
      * Guarda la lista actual de clientes en un archivo JSON.
